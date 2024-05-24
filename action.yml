@@ -1,0 +1,88 @@
+name: 'Associated Pull Requests'
+description: 'A GitHub Action that outputs a list of pull request numbers associated with commits.'
+author: 'YUMEMI Inc.'
+branding:
+  icon: 'git-pull-request'
+  color: 'blue'
+inputs:
+  separator:
+    description: 'Separator between pull request numbers in plain format.'
+    required: false
+    default: ' '
+  format:
+    description: 'Output format for list of pull request numbers. One of plain, json, markdown.'
+    required: false
+    default: 'plain'
+  head-ref:
+    description: 'Current branch, tag, or commit SHA to compare with base.'
+    required: false
+    default: ${{ github.event_name == 'pull_request_target' && format('refs/pull/{0}/merge',github.event.number) || github.sha }}
+  base-ref:
+    description: 'Branch, tag, or commit SHA as a basis for comparison.'
+    required: false
+    default: |-
+      ${{
+        (github.event_name == 'pull_request' && github.base_ref) ||
+        (github.event_name == 'pull_request_target' && github.base_ref) ||
+        (github.event_name == 'push' && (startsWith(github.event.before, '0000') && github.event.repository.default_branch || github.event.before)) ||
+        (github.event_name == 'merge_group' && github.event.merge_group.base_sha) ||
+        github.event.repository.default_branch
+      }}
+outputs:
+  numbers:
+    description: 'List of pull request numbers.'
+    value: ${{ steps.list.outcome == 'success' && (inputs.format != 'plain' && steps.list.outputs.numbers || join(fromJSON(steps.list.outputs.numbers), inputs.separator)) || '' }}
+runs:
+  using: 'composite'
+  steps:
+    - name: List pull request numbers
+      id: list
+      shell: bash
+      env:
+        IS_VALID_FORMAT: ${{ inputs.format != null && contains(fromJSON('["plain","json","markdown"]'), inputs.format) }}
+        HEAD_REF: ${{ inputs.head-ref }}
+        BASE_REF: ${{ inputs.base-ref }}
+        HEAD_PR_NUMBER: ${{ github.event.pull_request.number || '-1' }}
+        FORMAT: ${{ inputs.format }}
+        GH_REPO: ${{ github.repository }} # for GitHub CLI
+        GH_TOKEN: ${{ github.token }} # for GitHub CLI
+      run: |
+        echo "::debug::gh version: $(gh --version | tr '\n' ' ')"
+        echo "::debug::jq version: $(jq --version)"
+        source "$GITHUB_ACTION_PATH/raise_error.sh"
+
+        if [ "$IS_VALID_FORMAT" != 'true' ]; then raise_error "'format' input must be one of plain, json, markdown."; fi
+
+        if [[ -z "$HEAD_REF" || -z "$BASE_REF" ]]; then raise_error "Specify 'head-ref' and 'base-ref' inputs."; fi
+
+        # have pemissons?
+        gh api 'repos/{owner}/{repo}/branches' --silent > /dev/null 2>&1 || raise_error "May not have 'contents: read' permission."
+        gh api 'repos/{owner}/{repo}/pulls' --silent > /dev/null 2>&1 || raise_error "May not have 'pull-requests: read' permission."
+
+        head_sha="$(gh api "repos/{owner}/{repo}/commits/$HEAD_REF" | jq -r '.sha')" > /dev/null 2>&1 || raise_error "'head-ref' input is not valid."
+        base_sha="$(gh api "repos/{owner}/{repo}/commits/$BASE_REF" | jq -r '.sha')" > /dev/null 2>&1 || raise_error "'base-ref' input is not valid."
+
+        # ref: https://zenn.dev/yumemi_inc/articles/3ed5a217cf3cbb
+        sha_list="$(gh api "repos/{owner}/{repo}/compare/${base_sha}...${head_sha}" --paginate | jq -r '.commits[]|select(.parents|length>1)|.sha')"
+
+        for sha in $sha_list ; do
+          pr_number_list="$(gh api "repos/{owner}/{repo}/commits/${sha}/pulls" | jq '.[].number|select(.!='"${HEAD_PR_NUMBER}"')')"
+          for pr_number in $pr_number_list ; do
+            pr_number_array+=("$pr_number")
+          done
+        done
+
+        unique_pr_number_list="$(echo "${pr_number_array[@]}" | tr ' ' '\n' | sort -u)"
+        
+        {
+          if [ "$FORMAT" == 'markdown' ]; then
+            delimiter="$(openssl rand -hex 8)"
+            echo "numbers<<$delimiter"
+            for pr_number in $unique_pr_number_list ; do
+              echo "- #${pr_number}"
+            done
+            echo "$delimiter"
+          else
+            echo "numbers=$(echo "$unique_pr_number_list" | jq -cs)"
+          fi
+        } >> "$GITHUB_OUTPUT"
