@@ -14,7 +14,7 @@ Note that this action requires `contents: read` and `pull-requests: read` permis
 Works on any event.
 Basically it works as is, but if you want to customize it, refer to the [Specify comparison targets](#specify-comparison-targets) section.
 
-### Use a list of pull request numbers
+### Basic
 
 Use list of pull request numbers from `numbers` output.
 
