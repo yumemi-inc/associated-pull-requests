@@ -71,7 +71,7 @@ runs:
 
         # ref: https://zenn.dev/yumemi_inc/articles/3ed5a217cf3cbb
 
-        # on windows, jq response contains CR
+        # on windows, jq's return contains CR
         sha_list="$(gh api "repos/{owner}/{repo}/compare/${base_sha}...${head_sha}" --paginate | jq -r '.commits[]|select(.parents|length>1)|.sha' | tr -d '\r')"
 
         for sha in $sha_list ; do
