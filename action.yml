@@ -31,7 +31,14 @@ inputs:
 outputs:
   numbers:
     description: 'List of pull request numbers.'
-    value: ${{ steps.list.outcome == 'success' && (inputs.format != 'plain' && steps.list.outputs.numbers || join(fromJSON(steps.list.outputs.numbers), inputs.separator)) || '' }}
+    value: |-
+      ${{ 
+        steps.list.outcome == 'success' && (
+          (inputs.format == 'plain' && join(fromJSON(steps.list.outputs.numbers), inputs.separator)) ||
+          (inputs.format == 'json' && steps.list.outputs.numbers) ||
+          (inputs.format == 'markdown' && steps.list.outputs.numbers)
+        ) || ''
+      }}
 runs:
   using: 'composite'
   steps:
@@ -63,10 +70,12 @@ runs:
         base_sha="$(gh api "repos/{owner}/{repo}/commits/$BASE_REF" | jq -r '.sha')" > /dev/null 2>&1 || raise_error "'base-ref' input is not valid."
 
         # ref: https://zenn.dev/yumemi_inc/articles/3ed5a217cf3cbb
-        sha_list="$(gh api "repos/{owner}/{repo}/compare/${base_sha}...${head_sha}" --paginate | jq -r '.commits[]|select(.parents|length>1)|.sha')"
+
+        # on windows, jq response contains CR
+        sha_list="$(gh api "repos/{owner}/{repo}/compare/${base_sha}...${head_sha}" --paginate | jq -r '.commits[]|select(.parents|length>1)|.sha' | tr -d '\r')"
 
         for sha in $sha_list ; do
-          pr_number_list="$(gh api "repos/{owner}/{repo}/commits/${sha}/pulls" | jq '.[].number|select(.!='"${HEAD_PR_NUMBER}"')')"
+          pr_number_list="$(gh api "repos/{owner}/{repo}/commits/${sha}/pulls" | jq '.[].number|select(.!='"${HEAD_PR_NUMBER}"')' | tr -d '\r')"
           for pr_number in $pr_number_list ; do
             pr_number_array+=("$pr_number")
           done
