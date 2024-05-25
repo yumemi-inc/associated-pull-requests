@@ -31,7 +31,14 @@ inputs:
 outputs:
   numbers:
     description: 'List of pull request numbers.'
-    value: ${{ steps.list.outcome == 'success' && (inputs.format != 'plain' && steps.list.outputs.numbers || join(fromJSON(steps.list.outputs.numbers), inputs.separator)) || '' }}
+    value: |-
+      ${{ 
+        steps.list.outcome == 'success' && (
+          (inputs.format == 'plain' && join(fromJSON(steps.list.outputs.numbers), inputs.separator)) ||
+          (inputs.format == 'json' && steps.list.outputs.numbers) ||
+          (inputs.format == 'markdown' && steps.list.outputs.numbers)
+        ) || ''
+      }}
 runs:
   using: 'composite'
   steps:
