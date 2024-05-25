@@ -1,5 +1,5 @@
 name: 'Associated Pull Requests'
-description: 'A GitHub Action that outputs a list of pull request numbers associated with commits.'
+description: 'A GitHub Action that outputs a list of pull request numbers associated with commits between any references.'
 author: 'YUMEMI Inc.'
 branding:
   icon: 'git-pull-request'
