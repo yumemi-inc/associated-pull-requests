@@ -55,6 +55,8 @@ The default values ​​for these inputs for each workflow trigger event are th
 
 In a pull request, comment if there are any associated pull requests.
 
+![image](doc/image.png)
+
 ```yaml
 name: Associated PR Report
 
