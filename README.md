@@ -46,6 +46,18 @@ If you want to output in JSON or Markdown instead of plain text like above, spec
     format: 'json' # or markdown
 ```
 
+By default, list pull requests associated with merge commits.
+To list pull requests associated with all commits, specify `true` for `merge-commit-only` input.
+
+However, in this case, more pull requests can be detected, but the number of API calls will increase, so be careful when using it when the commit history is long.
+
+```yaml
+- uses: yumemi-inc/associated-pull-requests@v1
+  id: associated-pr
+  with:
+    merge-commit-only: false
+```
+
 ### Specify comparison targets
 
 Commits between `head-ref` input and `base-ref` input references are used to search for associated pull requests.
