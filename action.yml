@@ -53,7 +53,7 @@ runs:
         IS_VALID_FORMAT: ${{ inputs.format != null && contains(fromJSON('["plain","json","markdown"]'), inputs.format) }}
         HEAD_REF: ${{ inputs.head-ref }}
         BASE_REF: ${{ inputs.base-ref }}
-        PARENTS_MIN_LENGTH: ${{ inputs.merge-commit-only != 'flase' && '2' || '1' }}
+        PARENTS_MIN_LENGTH: ${{ inputs.merge-commit-only != 'false' && '2' || '1' }}
         HEAD_PR_NUMBER: ${{ github.event.pull_request.number || '-1' }}
         FORMAT: ${{ inputs.format }}
         GH_REPO: ${{ github.repository }} # for GitHub CLI
