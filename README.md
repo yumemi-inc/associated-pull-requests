@@ -48,7 +48,6 @@ If you want to output in JSON or Markdown instead of plain text like above, spec
 
 By default, list pull requests associated with merge commits.
 To list pull requests associated with all commits, specify `true` for `merge-commit-only` input.
-
 However, in this case, more pull requests can be detected, but the number of API calls will increase, so be careful when using it when the commit history is long.
 
 ```yaml
@@ -63,7 +62,17 @@ However, in this case, more pull requests can be detected, but the number of API
 Commits between `head-ref` input and `base-ref` input references are used to search for associated pull requests.
 The default values ​​for these inputs for each workflow trigger event are the same as [yumemi-inc/path-filter](https://github.com/yumemi-inc/path-filter#specify-comparison-targets), so refer to it for details, but note that this Associated Pull Requests action always performs [three-dot](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-comparing-branches-in-pull-requests#three-dot-and-two-dot-git-diff-comparisons) comparison, does not support two-dot.
 
-## Examples
+For example, to explicitly specify these inputs and list pull requests between `main` and `develop` branches:
+
+```yaml
+- uses: yumemi-inc/associated-pull-requests@v1
+  id: associated-pr
+  with:
+    head-ref: 'develop'
+    base-ref: 'main'
+```
+
+## Other examples
 
 In a pull request, comment if there are any associated pull requests.
 
