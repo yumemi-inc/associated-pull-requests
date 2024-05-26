@@ -13,6 +13,10 @@ inputs:
     description: 'Output format for list of pull request numbers. One of plain, json, markdown.'
     required: false
     default: 'plain'
+  merge-commit-only:
+    description: 'List pull requests associated with merge commits only.'
+    required: false
+    default: 'true'
   head-ref:
     description: 'Current branch, tag, or commit SHA to compare with base.'
     required: false
@@ -49,6 +53,7 @@ runs:
         IS_VALID_FORMAT: ${{ inputs.format != null && contains(fromJSON('["plain","json","markdown"]'), inputs.format) }}
         HEAD_REF: ${{ inputs.head-ref }}
         BASE_REF: ${{ inputs.base-ref }}
+        PARENTS_MIN_LENGTH: ${{ inputs.merge-commit-only != 'flase' && '2' || '1' }}
         HEAD_PR_NUMBER: ${{ github.event.pull_request.number || '-1' }}
         FORMAT: ${{ inputs.format }}
         GH_REPO: ${{ github.repository }} # for GitHub CLI
@@ -72,10 +77,10 @@ runs:
         # ref: https://zenn.dev/yumemi_inc/articles/3ed5a217cf3cbb
 
         # on windows, jq's return contains CR
-        sha_list="$(gh api "repos/{owner}/{repo}/compare/${base_sha}...${head_sha}" --paginate | jq -r '.commits[]|select(.parents|length>1)|.sha' | tr -d '\r')"
+        sha_list="$(gh api "repos/{owner}/{repo}/compare/${base_sha}...${head_sha}" --paginate | jq -r '.commits[]|select(.parents|length>='"$PARENTS_MIN_LENGTH"')|.sha' | tr -d '\r')"
 
         for sha in $sha_list ; do
-          pr_number_list="$(gh api "repos/{owner}/{repo}/commits/${sha}/pulls" | jq '.[].number|select(.!='"${HEAD_PR_NUMBER}"')' | tr -d '\r')"
+          pr_number_list="$(gh api "repos/{owner}/{repo}/commits/${sha}/pulls" | jq '.[].number|select(.!='"$HEAD_PR_NUMBER"')' | tr -d '\r')"
           for pr_number in $pr_number_list ; do
             pr_number_array+=("$pr_number")
           done
