@@ -48,9 +48,10 @@ If you want to output in JSON or Markdown instead of plain text like above, spec
 
 If you want to change the bullets in a list in Markdown format, specify `bullet` input (default is `- #`).
 
+### Use other than merge commits
+
 By default, list pull requests associated with merge commits.
-To list pull requests associated with all commits, specify `true` for `merge-commit-only` input.
-However, in this case, more pull requests can be detected, but the number of API calls will increase, so be careful when using it when the commit history is long.
+To list pull requests associated with all commits, specify `false` for `merge-commit-only` input.
 
 ```yaml
 - uses: yumemi-inc/associated-pull-requests@v1
@@ -58,6 +59,10 @@ However, in this case, more pull requests can be detected, but the number of API
   with:
     merge-commit-only: false
 ```
+In this case, more pull requests can be detected, but note the following:
+
+- The number of API calls will increase, so be careful when using it when the commit history is long.
+- Pull requests that reuse commits are also detected and can be noisy.
 
 ### Specify comparison targets
 
