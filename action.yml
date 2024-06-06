@@ -13,6 +13,10 @@ inputs:
     description: 'Output format for list of pull request numbers. One of plain, json, markdown.'
     required: false
     default: 'plain'
+  bullet:
+    description: 'Bullets for list of pull request numbers in markdown format.'
+    required: false
+    default: '- #'
   merge-commit-only:
     description: 'List pull requests associated with merge commits only.'
     required: false
@@ -56,6 +60,7 @@ runs:
         PARENTS_MIN_LENGTH: ${{ inputs.merge-commit-only != 'false' && '2' || '1' }}
         HEAD_PR_NUMBER: ${{ github.event.pull_request.number || '-1' }}
         FORMAT: ${{ inputs.format }}
+        BULLET: ${{ inputs.bullet }}
         GH_REPO: ${{ github.repository }} # for GitHub CLI
         GH_TOKEN: ${{ github.token }} # for GitHub CLI
       run: |
@@ -93,7 +98,7 @@ runs:
             delimiter="$(openssl rand -hex 8)"
             echo "numbers<<$delimiter"
             for pr_number in $unique_pr_number_list ; do
-              echo "- #${pr_number}"
+              echo "${BULLET}${pr_number}"
             done
             echo "$delimiter"
           else
