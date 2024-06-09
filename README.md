@@ -51,7 +51,9 @@ If you want to change the bullets in a list in Markdown format, specify `bullet`
 ### Use other than merge commits
 
 By default, list pull requests associated with merge commits.
-To list pull requests associated with all commits, specify `false` for `merge-commit-only` input.
+In this case, pull requests merged with *[Squash and merge](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#squashing-your-merge-commits)* or *[ Rebase and merge](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#rebasing-and-merging-your-commits)* cannot be detected.
+
+To include pull requests merged with these in the results, specify `false` for `merge-commit-only` input.
 
 ```yaml
 - uses: yumemi-inc/associated-pull-requests@v1
@@ -59,10 +61,8 @@ To list pull requests associated with all commits, specify `false` for `merge-co
   with:
     merge-commit-only: false
 ```
-In this case, more pull requests can be detected, but note the following:
 
-- The number of API calls will increase, so be careful when using it when the commit history is long.
-- Pull requests that reuse commits are also detected and can be noisy.
+In this case, all pull requests can be detected, but the number of API calls will increase, so be careful when using it when the commit history is long.
 
 ### Specify comparison targets
 
@@ -122,3 +122,9 @@ jobs:
             ${{ steps.associated-pr.outputs.numbers }}
           previous-comment: 'hide'
 ```
+
+## Limitation
+
+Due to the limitations of the [GitHub API](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-pull-requests-associated-with-a-commit) used by this action, pull requests that reuse commits elsewhere will also be detected.
+
+Currently, this noise is reduced by limiting pull requests with merged status, and this behavior can be changed with `merged-status-only` input.
