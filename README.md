@@ -51,7 +51,7 @@ If you want to change the bullets in a list in Markdown format, specify `bullet`
 ### Use other than merge commits
 
 By default, list pull requests associated with merge commits.
-In this case, pull requests merged with *[Squash and merge](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#squashing-your-merge-commits)* or *[ Rebase and merge](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#rebasing-and-merging-your-commits)* cannot be detected.
+In this case, pull requests merged with *[Squash and merge](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#squashing-your-merge-commits)* or *[Rebase and merge](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#rebasing-and-merging-your-commits)* cannot be detected.
 
 To include pull requests merged with these in the results, specify `false` for `merge-commit-only` input.
 
@@ -63,6 +63,7 @@ To include pull requests merged with these in the results, specify `false` for `
 ```
 
 In this case, all pull requests can be detected, but the number of API calls will increase, so be careful when using it when the commit history is long.
+Therefore, if you don't need *Squash and merge* and *Rebase and merge*, it's better to disable them in the repository settings.
 
 ### Specify comparison targets
 
