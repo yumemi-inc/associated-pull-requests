@@ -126,4 +126,4 @@ jobs:
 ## Limitation
 
 - Due to the limitations of the [GitHub API](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-pull-requests-associated-with-a-commit) used by this action, pull requests that reuse commits elsewhere will also be detected. Currently, this noise is reduced by limiting pull requests with merged status, and this behavior can be changed with `merged-status-only` input.
-- Of course, if you merge or push without going through a pull request, there will be no associated pull request. If this is critical, use branch protection rules or rulesets to require merging via pull request.
+- Of course, if you merge or push without going through a pull request, there will be no associated pull request. If this is critical, use *branch protection rules* or *rulesets* to require merging via pull request.
