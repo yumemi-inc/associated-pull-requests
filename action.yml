@@ -21,6 +21,10 @@ inputs:
     description: 'List pull requests associated with merge commits only.'
     required: false
     default: 'true'
+  merged-status-only:
+    description: 'List pull requests with merged status only.'
+    required: false
+    default: 'true'
   head-ref:
     description: 'Current branch, tag, or commit SHA to compare with base.'
     required: false
@@ -58,6 +62,7 @@ runs:
         HEAD_REF: ${{ inputs.head-ref }}
         BASE_REF: ${{ inputs.base-ref }}
         PARENTS_MIN_LENGTH: ${{ inputs.merge-commit-only != 'false' && '2' || '1' }}
+        EXCLUDE_MERGE_AT: ${{ inputs.merged-status-only != 'false' && 'null' || '-1' }}
         HEAD_PR_NUMBER: ${{ github.event.pull_request.number || '-1' }}
         FORMAT: ${{ inputs.format }}
         BULLET: ${{ inputs.bullet }}
@@ -85,7 +90,7 @@ runs:
         sha_list="$(gh api "repos/{owner}/{repo}/compare/${base_sha}...${head_sha}" --paginate | jq -r '.commits[]|select(.parents|length>='"$PARENTS_MIN_LENGTH"')|.sha' | tr -d '\r')"
 
         for sha in $sha_list ; do
-          pr_number_list="$(gh api "repos/{owner}/{repo}/commits/${sha}/pulls" | jq '.[].number|select(.!='"$HEAD_PR_NUMBER"')' | tr -d '\r')"
+          pr_number_list="$(gh api "repos/{owner}/{repo}/commits/${sha}/pulls" | jq '.[]|select(.merged_at!='"$EXCLUDE_MERGE_AT"')|.number|select(.!='"$HEAD_PR_NUMBER"')' | tr -d '\r')"
           for pr_number in $pr_number_list ; do
             pr_number_array+=("$pr_number")
           done
